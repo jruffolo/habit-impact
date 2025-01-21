@@ -1,0 +1,1 @@
+Habit Impact is an app to plan out your weekly habits and see how much impact they can have!
