@@ -7,6 +7,7 @@ function App() {
   return (
     <>
       <InputForm state={habits} updateState={setHabits} />
+      <HabitList habits={habits} state={habits} updateState={setHabits}/>
     </>
   )
 }
@@ -23,6 +24,9 @@ function InputForm({ state, updateState }) {
   }
 
   return (
+    <>
+    <h2>Create New Habit</h2>
+
     <form onSubmit={handleSubmit}>
       <label htmlFor="name">
         Habit Name:
@@ -44,15 +48,45 @@ function InputForm({ state, updateState }) {
         <option value="1">Weekly</option>
       </select>
       </label>
+      <label htmlFor="name">
+        Notes:
+        <input type="textarea" name="notes" placeholder="" id="" />
+      </label>
       <button>Create New</button>
     </form>
+    </>
   )
 }
 
-function HabitList() {
+function HabitList({ habits, state, updateState }) {
+  function handleDelete(key) {
+    updateState(state.toSpliced(key, 1));
+  }
+
+  const items = habits.map((habit, i) => {
+    return (
+      <li key={i}>
+        <HabitCard habit={habit} onDelete={() => handleDelete(i)}/>
+      </li>
+    )
+  });
+
   return (
     <>
-    
+    <h2>List of Habits</h2>
+    <ul>
+      {items}
+    </ul>
+    </>
+  )
+}
+
+function HabitCard({ habit, onDelete }) {
+  return (
+    <>
+    <p>{habit.name} for {habit.amount} minutes {habit.frequency} days per week</p>
+    <p>{habit.notes}</p>
+    <button onClick={onDelete}>Delete</button>
     </>
   )
 }
