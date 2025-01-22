@@ -8,6 +8,7 @@ function App() {
     <>
       <InputForm state={habits} updateState={setHabits} />
       <HabitList habits={habits} state={habits} updateState={setHabits}/>
+      <HabitCheckout habits={habits} />
     </>
   )
 }
@@ -87,6 +88,33 @@ function HabitCard({ habit, onDelete }) {
     <p>{habit.name} for {habit.amount} minutes {habit.frequency} days per week</p>
     <p>{habit.notes}</p>
     <button onClick={onDelete}>Delete</button>
+    </>
+  )
+}
+
+function HabitCheckout({ habits }) {
+  const [period, setPeriod] = useState(12);
+  const WEEK_TO_MONTH = 13 / 3;
+  const WEEK_ADJUST = 365 / 364;
+
+  function totalTime(amount, freq, period) {
+    const minutes = amount * freq * period * WEEK_TO_MONTH * WEEK_ADJUST;
+    return Math.ceil(minutes / 60);
+  }
+
+  const items = habits.map((habit, i) => {
+    const time = totalTime(habit.amount, habit.frequency, period);
+
+    return <li key={i}>{habit.name}: {time} hours</li>
+  })
+
+  return (
+    <>
+    <h2>Habit Checkout</h2>
+    <p>Period: {period} months</p>
+    <ul>
+      {items}
+    </ul>
     </>
   )
 }
