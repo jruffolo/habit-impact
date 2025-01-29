@@ -7,8 +7,8 @@ function App() {
   return (
     <>
       <InputForm state={habits} updateState={setHabits} />
-      <HabitList habits={habits} state={habits} updateState={setHabits}/>
-      <HabitCheckout habits={habits} />
+      <List habits={habits} state={habits} updateState={setHabits}/>
+      <Results habits={habits} />
     </>
   )
 }
@@ -59,7 +59,7 @@ function InputForm({ state, updateState }) {
   )
 }
 
-function HabitList({ habits, state, updateState }) {
+function List({ habits, state, updateState }) {
   function handleDelete(key) {
     updateState(state.toSpliced(key, 1));
   }
@@ -67,7 +67,7 @@ function HabitList({ habits, state, updateState }) {
   const items = habits.map((habit, i) => {
     return (
       <li key={i}>
-        <HabitCard habit={habit} onDelete={() => handleDelete(i)}/>
+        <Card habit={habit} onDelete={() => handleDelete(i)}/>
       </li>
     )
   });
@@ -82,7 +82,7 @@ function HabitList({ habits, state, updateState }) {
   )
 }
 
-function HabitCard({ habit, onDelete }) {
+function Card({ habit, onDelete }) {
   return (
     <>
     <p>{habit.name} for {habit.amount} minutes {habit.frequency} days per week</p>
@@ -92,7 +92,7 @@ function HabitCard({ habit, onDelete }) {
   )
 }
 
-function HabitCheckout({ habits }) {
+function Results({ habits }) {
   const [period, setPeriod] = useState(12);
   const WEEK_TO_MONTH = 13 / 3;
   const WEEK_ADJUST = 365 / 364;
