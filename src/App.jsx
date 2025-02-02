@@ -1,6 +1,20 @@
 import { useState } from 'react'
 import './App.css'
 
+function hashCode(str, seed = 0) {
+  let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+  for(let i = 0, ch; i < str.length; i++) {
+    ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1  = Math.imul(h1 ^ (h1 >>> 16), 2246822507);
+  h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2  = Math.imul(h2 ^ (h2 >>> 16), 2246822507);
+  h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+};
+
 function App() {
   const [habits, setHabits] = useState([]);
 
@@ -20,7 +34,16 @@ function InputForm({ state, updateState }) {
     const form = e.target;
     const formData = new FormData(form);
     const formJson = Object.fromEntries(formData.entries());
+    const hash = hashCode(formJson.name.toLowerCase());
+    
+    for (const habit of state) {
+      if (habit.hash == hash) {
+        console.log('Entry already exists with that name');
+        return;
+      }
+    }
 
+    formJson.hash = hash;
     updateState([...state, formJson]);
   }
 
