@@ -37,13 +37,13 @@ function InputForm({ state, updateState }) {
     const hash = hashCode(formJson.name.toLowerCase());
     
     for (const habit of state) {
-      if (habit.hash == hash) {
+      if (habit.id == hash) {
         console.log('Entry already exists with that name');
         return;
       }
     }
 
-    formJson.hash = hash;
+    formJson.id = hash;
     updateState([...state, formJson]);
   }
 
