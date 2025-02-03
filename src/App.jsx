@@ -16,12 +16,12 @@ function hashCode(str, seed = 0) {
 };
 
 function App() {
-  const [habits, setHabits] = useState([]);
+  const [habits, setHabits] = useState({});
 
   return (
     <>
       <InputForm state={habits} updateState={setHabits} />
-      <List habits={habits} state={habits} updateState={setHabits}/>
+      <List state={habits} updateState={setHabits}/>
       <Results habits={habits} />
     </>
   )
@@ -36,15 +36,9 @@ function InputForm({ state, updateState }) {
     const formJson = Object.fromEntries(formData.entries());
     const hash = hashCode(formJson.name.toLowerCase());
     
-    for (const habit of state) {
-      if (habit.id == hash) {
-        console.log('Entry already exists with that name');
-        return;
-      }
-    }
+    if (state[hash]) return;
 
-    formJson.id = hash;
-    updateState([...state, formJson]);
+    updateState({...state, [hash]: formJson});
   }
 
   return (
@@ -54,23 +48,23 @@ function InputForm({ state, updateState }) {
     <form onSubmit={handleSubmit}>
       <label htmlFor="name">
         Habit Name:
-        <input type="text" name="name" placeholder="Habit Name" id="" />
+        <input type="text" name="name" placeholder="Habit Name" id="" required />
       </label>
       <label htmlFor="amount">
         Amount:
-        <input type="number" name="amount" min="5" step="5" placeholder="5" id="" />
+        <input type="number" name="amount" min="5" step="5" placeholder="5" id="" required />
       </label>
       <label htmlFor="frequency">
         Frequency:
-        <select name="frequency" id="">
-        <option value="">Select a frequency</option>
-        <option value="7">Daily</option>
-        <option value="5">5 times per week</option>
-        <option value="4">4 times per week</option>
-        <option value="3">3 times per week</option>
-        <option value="2">2 times per week</option>
-        <option value="1">Weekly</option>
-      </select>
+        <select name="frequency" id="" required>
+          <option value="">Select a frequency</option>
+          <option value="7">Daily</option>
+          <option value="5">5 times per week</option>
+          <option value="4">4 times per week</option>
+          <option value="3">3 times per week</option>
+          <option value="2">2 times per week</option>
+          <option value="1">Weekly</option>
+        </select>
       </label>
       <label htmlFor="name">
         Notes:
@@ -82,18 +76,22 @@ function InputForm({ state, updateState }) {
   )
 }
 
-function List({ habits, state, updateState }) {
+function List({ state, updateState }) {
   function handleDelete(key) {
-    updateState(state.toSpliced(key, 1));
+    const newState = state;
+    delete newState[key];
+    updateState({...newState});
   }
 
-  const items = habits.map((habit, i) => {
-    return (
-      <li key={i}>
-        <Card habit={habit} onDelete={() => handleDelete(i)}/>
+  const items = [];
+
+  for (const habit in state) {
+    items.push(
+      <li key={habit}>
+        <Card habit={state[habit]} onDelete={() => handleDelete(habit)}/>
       </li>
     )
-  });
+  }
 
   return (
     <>
@@ -109,11 +107,20 @@ function Card({ habit, onDelete }) {
   return (
     <>
     <p>{habit.name} for {habit.amount} minutes {habit.frequency} days per week</p>
-    <p>{habit.notes}</p>
+    <p>{habit.notes ? "Notes: " + habit.notes : null}</p>
+    <button onClick={null}>Edit</button>
     <button onClick={onDelete}>Delete</button>
     </>
   )
 }
+
+// function UpdateCard({ id, state, updateState }) {
+//   return (
+//     <>
+
+//     </>
+//   )
+// }
 
 function Results({ habits }) {
   const [timeframe, setTimeframe] = useState(12);
@@ -126,11 +133,13 @@ function Results({ habits }) {
     return Math.ceil(minutes / 60);
   }
 
-  const items = habits.map((habit, i) => {
+  const items = [];
+
+  for (const habit in habits) {
     const time = totalTime(habit.amount, habit.frequency, timeframe);
     sumTime += time;
-    return <li key={i}>{habit.name}: {time} hours</li>
-  })
+    items.push(<li key={habit}>{habit.name}: {time} hours</li>);
+  }
 
   return (
     <>
