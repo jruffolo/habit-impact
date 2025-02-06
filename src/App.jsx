@@ -17,28 +17,33 @@ function hashCode(str, seed = 0) {
 
 function App() {
   const [habits, setHabits] = useState({});
+  const [entries, countEntries] = useState(0);
 
   return (
     <>
-      <InputForm state={habits} updateState={setHabits} />
-      <List state={habits} updateState={setHabits}/>
+      <InputForm state={habits} updateState={setHabits} entries={entries} countEntries={countEntries} />
+      <List state={habits} updateState={setHabits} />
       <Results habits={habits} />
     </>
   )
 }
 
-function InputForm({ state, updateState }) {
+function InputForm({ state, updateState, entries, countEntries}) {
   function handleSubmit(e) {
     e.preventDefault();
-
+    
     const form = e.target;
     const formData = new FormData(form);
     const formJson = Object.fromEntries(formData.entries());
-    const hash = hashCode(formJson.name.toLowerCase());
+    formJson.created = entries;
+    formJson.id = hashCode(String(formJson.created));
     
-    if (state[hash]) return;
+    for (const habit in state) {
+      if (state[habit].name.toLowerCase() == formJson.name.toLowerCase()) return;
+    }
 
-    updateState({...state, [hash]: formJson});
+    countEntries(entries + 1);
+    updateState({...state, [formJson.id]: formJson});
   }
 
   return (
@@ -77,9 +82,38 @@ function InputForm({ state, updateState }) {
 }
 
 function List({ state, updateState }) {
-  function handleDelete(key) {
+  const [editFocus, setEditFocus] = useState(null);
+
+  function handleDelete(id) {
     const newState = state;
-    delete newState[key];
+    delete newState[id];
+    updateState({...newState});
+  }
+
+  function handleCancel() {
+    setEditFocus(null);
+  }
+  
+  function handleEdit(id) {
+    setEditFocus(id);
+  }
+
+  function handleUpdate(e, id) {
+    e.preventDefault();
+    
+    const form = e.target;
+    const formData = new FormData(form);
+    const formJson = Object.fromEntries(formData.entries());
+    
+    const newState = state;
+
+    for (const habit in state) {
+      if (state[habit].name.toLowerCase() == formJson.name.toLowerCase() && state[habit].id !== id) return;
+    }
+
+    Object.assign(newState[id], formJson);
+    
+    setEditFocus(null);
     updateState({...newState});
   }
 
@@ -88,7 +122,7 @@ function List({ state, updateState }) {
   for (const habit in state) {
     items.push(
       <li key={habit}>
-        <Card habit={state[habit]} onDelete={() => handleDelete(habit)}/>
+        <Card habit={state[habit]} editable={editFocus} onDelete={() => handleDelete(habit)} onCancel={handleCancel} onEdit={() => handleEdit(habit)} onUpdate={handleUpdate}/>
       </li>
     )
   }
@@ -103,24 +137,42 @@ function List({ state, updateState }) {
   )
 }
 
-function Card({ habit, onDelete }) {
+function Card({ habit, editable, onDelete, onEdit, onCancel, onUpdate }) {
+  const staticCard = 
+  <>
+  <p>{habit.name} for {habit.amount} minutes {habit.frequency} days per week</p>
+  <p>{habit.notes ? "Notes: " + habit.notes : null}</p>
+  <button onClick={onEdit}>Edit</button>
+  <button onClick={onDelete}>Delete</button>
+  </>;
+
+  const freqOptions = [1, 2, 3, 4, 5, 7];
+  const optionList = freqOptions.map(n => {
+    const textVal = n == 1 ? 'Weekly' : n == 7 ? 'Daily' : `${n} times per week`;
+    if (n == habit.frequency) {
+      return <option selected key={n} value={n}>{textVal}</option>
+    }
+
+    return <option key={n} value={n}>{textVal}</option>
+  });
+  
+  
+  const editableCard = 
+    <form onSubmit={(e) => onUpdate(e, habit.id)}>
+      <input type="text" name="name" defaultValue={habit.name} id="" />
+      <input type="number" name="amount" min="5" step="5" defaultValue={habit.amount} id="" required />
+      <select name="frequency" id="" required>
+          {optionList}
+      </select>
+      <button onClick={onCancel}>Cancel</button>
+      <button>Update</button>
+    </form>;
+  
   return (
-    <>
-    <p>{habit.name} for {habit.amount} minutes {habit.frequency} days per week</p>
-    <p>{habit.notes ? "Notes: " + habit.notes : null}</p>
-    <button onClick={null}>Edit</button>
-    <button onClick={onDelete}>Delete</button>
-    </>
+    <>{editable && editable == habit.id ? editableCard : staticCard}</>
   )
 }
 
-// function UpdateCard({ id, state, updateState }) {
-//   return (
-//     <>
-
-//     </>
-//   )
-// }
 
 function Results({ habits }) {
   const [timeframe, setTimeframe] = useState(12);
@@ -129,16 +181,15 @@ function Results({ habits }) {
   let sumTime = 0;
 
   function totalTime(amount, freq, timeframe) {
-    const minutes = amount * freq * timeframe * WEEK_TO_MONTH * WEEK_ADJUST;
-    return Math.ceil(minutes / 60);
+    return Math.ceil((amount * freq * timeframe * WEEK_TO_MONTH * WEEK_ADJUST) / 60);
   }
 
   const items = [];
 
   for (const habit in habits) {
-    const time = totalTime(habit.amount, habit.frequency, timeframe);
+    const time = totalTime(habits[habit].amount, habits[habit].frequency, timeframe);
     sumTime += time;
-    items.push(<li key={habit}>{habit.name}: {time} hours</li>);
+    items.push(<li key={habit}>{habits[habit].name}: {time} hours</li>);
   }
 
   return (
@@ -160,7 +211,7 @@ function Results({ habits }) {
     <ul>
       {items}
     </ul>
-    <p>Total time spent toward your goals: {sumTime} hours!</p>
+    <p>Total time spent toward your goals: {Math.ceil(sumTime)} hours!</p>
     </>
   )
 }
