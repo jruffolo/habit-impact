@@ -12,7 +12,7 @@ function App() {
   const [sortDir, setSortDir] = useState('asc');
   
   let sortedHabits = habits;
-  sortedHabits.sort((a, b) => a[sortField] - b[sortField]);
+  sortedHabits.sort((a, b) => a[sortField] - b[sortField] || a.duration - b.duration || a.frequency - b.frequency);
 
   if (sortDir !== 'asc') sortedHabits.reverse();
   
