@@ -2,7 +2,11 @@ function Card({ habit, editable, onDelete, onEdit, onCancel, onUpdate }) {
     const staticCard = 
     <>
     <p>{habit.name} for {habit.duration} minutes {habit.frequency} days per week</p>
-    <p>{habit.notes ? "Notes: " + habit.notes : null}</p>
+    
+    {habit.notes && <details>
+      <summary>Notes</summary>
+      {habit.notes}
+    </details>}
     <button onClick={onEdit}>Edit</button>
     <button onClick={onDelete}>Delete</button>
     </>;
@@ -25,6 +29,7 @@ function Card({ habit, editable, onDelete, onEdit, onCancel, onUpdate }) {
         <select name="frequency" id="" required>
             {optionList}
         </select>
+        <input type="text" name="notes" defaultValue={habit.notes} id="" />
         <button onClick={onCancel}>Cancel</button>
         <button>Update</button>
       </form>;
