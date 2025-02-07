@@ -12,10 +12,10 @@ function Results({ habits }) {
 
   const items = [];
 
-  for (const habit in habits) {
-    const time = totalTime(habits[habit].duration, habits[habit].frequency, timeframe);
+  for (const habit of habits) {
+    const time = totalTime(habit.duration, habit.frequency, timeframe);
     sumTime += time;
-    items.push(<li key={habit}>{habits[habit].name}: {time} hours</li>);
+    items.push(<li key={habit.created}>{habit.name}: {time} hours</li>);
   }
 
   return (

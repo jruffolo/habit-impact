@@ -1,9 +1,4 @@
-import hashCode from '../utils/hashCode';
-
 function InputForm({ habits, setHabits, entries, countEntries}) {
-    /* Gets form data, checks for collision with existing data
-       Adds created and id properties, stores in state as id: Habit{}
-    */
     function handleSubmit(e) {
       e.preventDefault();
       
@@ -11,14 +6,14 @@ function InputForm({ habits, setHabits, entries, countEntries}) {
       const formData = new FormData(form);
       const formJson = Object.fromEntries(formData.entries());
       formJson.created = entries;
-      formJson.id = hashCode(String(formJson.created));
+      formJson.totalTime = formJson.duration * formJson.frequency;
       
-      for (const habit in habits) {
-        if (habits[habit].name.toLowerCase() == formJson.name.toLowerCase()) return;
+      for (const habit of habits) {
+        if (habit.name.toLowerCase() == formJson.name.toLowerCase()) return;
       }
   
       countEntries(entries + 1);
-      setHabits({...habits, [formJson.id]: formJson});
+      setHabits([...habits, formJson]);
     }
   
     return (

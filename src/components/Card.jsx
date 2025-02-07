@@ -19,7 +19,7 @@ function Card({ habit, editable, onDelete, onEdit, onCancel, onUpdate }) {
     
     
     const editableCard = 
-      <form onSubmit={(e) => onUpdate(e, habit.id)}>
+      <form data-id="hi" onSubmit={(e) => onUpdate(e)}>
         <input type="text" name="name" defaultValue={habit.name} id="" />
         <input type="number" name="duration" min="5" step="5" defaultValue={habit.duration} id="" required />
         <select name="frequency" id="" required>
@@ -30,7 +30,7 @@ function Card({ habit, editable, onDelete, onEdit, onCancel, onUpdate }) {
       </form>;
     
     return (
-      <>{editable && editable == habit.id ? editableCard : staticCard}</>
+      <>{editable ? editableCard : staticCard}</>
     )
   }
 
